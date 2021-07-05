@@ -18,6 +18,21 @@
 * [AWS SLAs](https://aws.amazon.com/legal/service-level-agreements/)
 * [AWS Architecture Center](https://aws.amazon.com/architecture/)
 
+## Azure Tools
+
+* Azure PowerShell
+* Azure CLI
+* ARM Tools VSCode extension
+* Azure CLI Tools VSCode extension
+* ARM API reference
+
+## AWS Tools
+
+* [AWS Tools for PowerShell](https://aws.amazon.com/powershell/)
+* [AWS CLI](https://aws.amazon.com/cli/)
+* [AWS Toolkit for VSCode](https://aws.amazon.com/visualstudiocode/)
+* [AWS API reference](https://docs.aws.amazon.com/quicksight/latest/APIReference/API_Reference.html)
+
 ## Azure Certification
 
 * [Azure certification home](https://docs.microsoft.com/en-us/learn/certifications/browse/)
