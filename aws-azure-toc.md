@@ -7,6 +7,7 @@
 * service comparison website
 * free tiers / cloud sandboxes
 * management tools
+* sdks and tools
 
 ### Storage
 
@@ -19,6 +20,16 @@
 * vms
 * paas compute
 * containers
+
+
+
+
+
+
+
+
+
+
 
 
 

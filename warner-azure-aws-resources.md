@@ -25,6 +25,7 @@
 * [ARM Tools VSCode extension](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools)
 * [Azure CLI Tools VSCode extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azurecli)
 * [ARM API reference](https://docs.microsoft.com/en-us/rest/api/azure/)
+* [Azure SDKs and Tools](https://azure.microsoft.com/en-us/downloads/)
 
 ## AWS Tools
 
@@ -32,6 +33,7 @@
 * [AWS CLI](https://aws.amazon.com/cli/)
 * [AWS Toolkit for VSCode](https://aws.amazon.com/visualstudiocode/)
 * [AWS API reference](https://docs.aws.amazon.com/quicksight/latest/APIReference/API_Reference.html)
+* [AWS SDKs and Tools](https://aws.amazon.com/tools/)
 
 ## Azure Certification
 
