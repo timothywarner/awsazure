@@ -2,6 +2,7 @@
 
 ## Azure General Resources
 
+* [Azure free account](https://azure.microsoft.com/en-us/free/)
 * [Azure docs](https://docs.microsoft.com/en-us/azure/)
 * [Azure pricing calculator](https://azure.microsoft.com/en-us/pricing/calculator/)
 * [Azure TCO calculator](https://azure.microsoft.com/pricing/tco/calculator/)
@@ -13,6 +14,7 @@
 
 ## AWS General Resources
 
+* [AWS free tier](https://aws.amazon.com/free/)
 * [AWS docs](https://docs.aws.amazon.com/)
 * [AWS pricing calculator](https://calculator.aws/)
 * [AWS SLAs](https://aws.amazon.com/legal/service-level-agreements/)
