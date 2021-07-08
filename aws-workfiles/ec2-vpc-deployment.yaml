@@ -1,0 +1,202 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: 'This template provisions a basic VPC architecture along with a single EC2 instance. We create a new user called cloud_user and enable password authentication for that user using a lambda function to generate the password. '
+#Parameters for the CFN Stack
+Parameters:
+  InstanceType:
+    Description: WebServer EC2 instance type
+    Type: String
+    Default: t3.small
+    AllowedValues: [t2.nano, t2.micro, t2.small, t2.medium, t2.large, t2.xlarge, t2.2xlarge,
+      t3.nano, t3.micro, t3.small, t3.medium, t3.large, t3.xlarge]
+    ConstraintDescription: must be a valid EC2 instance type.
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: 9
+    MaxLength: 18
+    Default: 0.0.0.0/0
+    AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+  LatestAmiId:
+    Type:  'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+#Resources such as a VPC, Subnet, Internet Gateway, Route Table, Routes, and Security Group.
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      CidrBlock: 10.0.0.0/16
+  PublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      CidrBlock: 10.0.0.0/24
+      AvailabilityZone: 'us-east-1a'
+      VpcId: !Ref VPC
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+  PublicSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Allow access from HTTP and SSH traffic
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Ref SSHLocation
+  #EC2 instance where users can authenticate using Instance Connect, or via cloud_user and the password provided by CFN outputs.
+  WebServerInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !Ref 'LatestAmiId'
+      NetworkInterfaces:
+        - GroupSet:
+            - !Ref WebServerSecurityGroup
+          AssociatePublicIpAddress: 'true'
+          DeviceIndex: '0'
+          DeleteOnTermination: 'true'
+          SubnetId: !Ref PublicSubnet
+      UserData:
+        Fn::Base64:
+          Fn::Sub:
+            - |
+              #!/bin/bash -xe
+              yum install ec2-instance-connect
+              adduser cloud_user
+              echo '${Password}' | passwd cloud_user --stdin
+              sed 's/PasswordAuthentication no/PasswordAuthentication yes/' -i /etc/ssh/sshd_config
+              service sshd restart
+              yum update -y
+              yum install -y httpd
+              service httpd start
+              chkconfig httpd on
+              groupadd www
+              usermod -a -G www cloud_user
+              echo '<html><h1>Deploying a Basic Infrastructure Using CloudFormation Templates Hands-On Lab</h1><h3>Web Server</h3><h3>Availability Zone: ' > /var/www/html/index.html
+              curl http://169.254.169.254/latest/meta-data/placement/availability-zone >> /var/www/html/index.html
+              echo '</h3> <h3>Instance Id: ' >> /var/www/html/index.html
+              curl http://169.254.169.254/latest/meta-data/instance-id >> /var/www/html/index.html
+              echo '</h3></html> ' >> /var/www/html/index.html
+            - Password: !GetAtt "CustomPasswordWebServer.password"
+  #Lambda function to generate a password for cloud_user. Students edit nothing below this line.
+  RoleLambdaPasswordGenerator:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+  PolicyLambdaGeneratePassword:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref "RoleLambdaPasswordGenerator"
+      PolicyName: LambdaPasswordGeneratorPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:*
+            Resource:
+              - arn:aws:logs:*:*:*
+  LambdaGeneratePassword:
+    Type: AWS::Lambda::Function
+    Properties:
+      Description: Generate a random password.
+      Handler: index.lambda_handler
+      Role: !GetAtt "RoleLambdaPasswordGenerator.Arn"
+      Runtime: python3.7
+      Timeout: 10
+      Code:
+        ZipFile: !Join
+          - "\n"
+          - - import cfnresponse;
+            - import json;
+            - import string;
+            - "import random;\n"
+            - "PASSWORD_LENGTH = 12;\n"
+            - "def lambda_handler(event, context):"
+            - "    print('## EVENT ##')"
+            - "    print(event)"
+            - "    responseData = {};\n"
+            - "    try:"
+            - "        chars = string.ascii_uppercase + string.ascii_lowercase + string.digits;"
+            - "        responseData['password'] =  ''.join(random.choice(chars)
+              for x in range(PASSWORD_LENGTH));"
+            - "        cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData\
+              \ );\n"
+            - "    except Exception as e:"
+            - "        print ('Error running PasswordGenerator');"
+            - "        print (e);"
+            - "        cfnresponse.send(event, context, cfnresponse.FAILED, responseData\
+              \ );\n"
+            - "    return responseData;"
+  CustomPasswordWebServer:
+    Type: Custom::CustomPasswordWebServer
+    Properties:
+      Length: 8
+      ServiceToken: !GetAtt "LambdaGeneratePassword.Arn"
+
+#Outputs to provide useful information to students via the CFN Console
+Outputs:
+  URL:
+    Value: !Join
+      - ''
+      - - 'http://'
+        - !GetAtt
+          - WebServerInstance
+          - PublicIp
+    Description: Newly created application URL
+Outputs:
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value: !Ref 'WebServerInstance'
+  AZ:
+    Description: Availability Zone of the newly created EC2 instance
+    Value: !GetAtt [WebServerInstance, AvailabilityZone]
+  PublicDNS:
+    Description: Public DNSName of the newly created EC2 instance
+    Value: !GetAtt [WebServerInstance, PublicDnsName]
+  PublicIP:
+    Description: Public IP address of the newly created EC2 instance
+    Value: !GetAtt [WebServerInstance, PublicIp]
+  WebServerCustomPassword:
+    Description: Password
+    Value: !GetAtt "CustomPasswordWebServer.password"
