@@ -7,8 +7,8 @@ Install-AWSToolsModule AWS.Tools.EC2, AWS.Tools.S3, AWS.Tools.IdentityManagement
 ## Get signed in
 
 Set-AWSCredential `
-  -AccessKey AKIA0123456787EXAMPLE `
-  -SecretKey wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY `
+  -AccessKey  `
+  -SecretKey  `
   -StoreAs TimProfile
 
 Initialize-AWSDefaultConfiguration -ProfileName TimProfile -Region us-east-2
