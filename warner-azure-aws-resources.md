@@ -20,11 +20,11 @@
 
 ## Azure Tools
 
-* Azure PowerShell
-* Azure CLI
-* ARM Tools VSCode extension
-* Azure CLI Tools VSCode extension
-* ARM API reference
+* [Azure PowerShell](https://docs.microsoft.com/en-us/powershell/azure/)
+* [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/)
+* [ARM Tools VSCode extension](https://marketplace.visualstudio.com/items?itemName=msazurermtools.azurerm-vscode-tools)
+* [Azure CLI Tools VSCode extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode.azurecli)
+* [ARM API reference](https://docs.microsoft.com/en-us/rest/api/azure/)
 
 ## AWS Tools
 

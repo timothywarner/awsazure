@@ -4,10 +4,23 @@
 
 ### General Comparison
 
+* service comparison website
+* free tiers / cloud sandboxes
+* management tools
+
 ### Storage
 
+* blob storage
+* databases
 
 ### Compute / Networking
+
+* networking
+* vms
+* paas compute
+* containers
+
+
 
 
 ## DAY 2
