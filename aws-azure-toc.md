@@ -37,8 +37,6 @@
 * Template Deployment
   * Create/modify S3/EC2 stacks
 
-
-
 ### Identity and Security
 
 * Create S3 bucket and copy out name
@@ -52,7 +50,6 @@
 * Hybrid / SSO
   * AADC
   * Enterprise Apps SSO
-
 
 ### Monitoring
 
