@@ -24,6 +24,7 @@
 ### Compute / Networking
 
 * networking / vNets / VPc
+  * Use CloudFormation/VS CODE
   * New VPC with one public subnet
   * Internet gateway attached to subnet
   * Route table 0.0.0.0/0 to gateway
